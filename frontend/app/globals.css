@@ -1,0 +1,331 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* === PROFESSIONAL SECURITY THEME === */
+:root {
+  /* Dark Theme (Default) - Enterprise Grade */
+  --background: 222 47% 5%;
+  --foreground: 210 40% 98%;
+
+  --card: 222 47% 8%;
+  --card-foreground: 210 40% 98%;
+
+  --popover: 222 47% 6%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 262 83% 65%;
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+
+  --accent: 262 83% 58%;
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 217 33% 17%;
+  --input: 217 33% 17%;
+  --ring: 262 83% 65%;
+
+  --success: 142 71% 45%;
+  --warning: 43 96% 56%;
+  --danger: 0 72% 51%;
+  --info: 199 89% 48%;
+
+  --radius: 0.75rem;
+}
+
+.light {
+  --background: 0 0% 97%;
+  --foreground: 222 47% 5%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 5%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 5%;
+
+  --primary: 262 83% 55%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 217 33% 93%;
+  --secondary-foreground: 222 47% 5%;
+
+  --muted: 217 33% 93%;
+  --muted-foreground: 217 33% 40%;
+
+  --accent: 262 83% 58%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 217 33% 90%;
+  --input: 217 33% 93%;
+  --ring: 262 83% 55%;
+
+  --success: 142 71% 45%;
+  --warning: 43 96% 56%;
+  --danger: 0 72% 51%;
+  --info: 199 89% 48%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* === GRADIENT BACKGROUNDS === */
+.gradient-mesh {
+  background:
+    radial-gradient(at 0% 0%, hsla(262, 83%, 65%, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(199, 89%, 48%, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(280, 100%, 70%, 0.08) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(142, 71%, 45%, 0.08) 0px, transparent 50%);
+}
+
+.gradient-border {
+  position: relative;
+  background: hsl(var(--card));
+  border-radius: var(--radius);
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.5;
+}
+
+/* === GLOW EFFECTS === */
+.glow-primary {
+  box-shadow: 0 0 25px hsla(var(--primary), 0.35),
+              0 0 50px hsla(var(--primary), 0.15);
+}
+
+.glow-success {
+  box-shadow: 0 0 25px hsla(var(--success), 0.35);
+}
+
+.glow-danger {
+  box-shadow: 0 0 25px hsla(var(--danger), 0.35);
+}
+
+.glow-warning {
+  box-shadow: 0 0 25px hsla(var(--warning), 0.35);
+}
+
+.glow-info {
+  box-shadow: 0 0 25px hsla(var(--info), 0.35);
+}
+
+/* === GLASS MORPHISM === */
+.glass {
+  background: hsla(var(--card), 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.glass-strong {
+  background: hsla(var(--card), 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* === ANIMATIONS === */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 20px currentColor;
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 40px currentColor;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsla(var(--primary), 0.1),
+    transparent
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 3s infinite linear;
+}
+
+/* === STAT CARDS === */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,
+    hsl(var(--primary)),
+    hsl(var(--info)),
+    hsl(var(--primary))
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite linear;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.stat-card:hover::after {
+  opacity: 1;
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* === TABLE ROWS === */
+.table-row-hover {
+  transition: all 0.2s ease;
+}
+
+.table-row-hover:hover {
+  background: hsla(var(--accent), 0.5);
+  transform: scale(1.01);
+}
+
+/* === RISK INDICATORS === */
+.risk-critical {
+  background: linear-gradient(135deg, hsla(348, 92%, 59%, 0.25), hsla(348, 92%, 59%, 0.08));
+  border: 1px solid hsla(348, 92%, 59%, 0.35);
+}
+
+.risk-high {
+  background: linear-gradient(135deg, hsla(25, 95%, 53%, 0.2), hsla(25, 95%, 53%, 0.05));
+  border: 1px solid hsla(25, 95%, 53%, 0.3);
+}
+
+.risk-medium {
+  background: linear-gradient(135deg, hsla(38, 92%, 50%, 0.2), hsla(38, 92%, 50%, 0.05));
+  border: 1px solid hsla(38, 92%, 50%, 0.3);
+}
+
+.risk-low {
+  background: linear-gradient(135deg, hsla(142, 76%, 36%, 0.2), hsla(142, 76%, 36%, 0.05));
+  border: 1px solid hsla(142, 76%, 36%, 0.3);
+}
+
+/* === DECISION BADGES === */
+.decision-allow {
+  background: linear-gradient(135deg, hsla(142, 76%, 36%, 0.35), hsla(142, 76%, 36%, 0.12));
+  color: hsl(142, 76%, 72%);
+  border: 1px solid hsla(142, 76%, 36%, 0.55);
+}
+
+.decision-approve {
+  background: linear-gradient(135deg, hsla(38, 92%, 50%, 0.35), hsla(38, 92%, 50%, 0.12));
+  color: hsl(38, 92%, 72%);
+  border: 1px solid hsla(38, 92%, 50%, 0.55);
+}
+
+.decision-block {
+  background: linear-gradient(135deg, hsla(348, 92%, 59%, 0.35), hsla(348, 92%, 59%, 0.12));
+  color: hsl(348, 92%, 78%);
+  border: 1px solid hsla(348, 92%, 59%, 0.55);
+}
+
+.decision-pending {
+  background: linear-gradient(135deg, hsla(262, 20%, 50%, 0.3), hsla(262, 20%, 50%, 0.1));
+  color: hsl(262, 25%, 72%);
+  border: 1px solid hsla(262, 20%, 50%, 0.5);
+}
+
+/* === CHART COLORS === */
+:root {
+  --chart-allow: 142 76% 50%;
+  --chart-approve: 38 92% 50%;
+  --chart-block: 348 92% 59%;
+  --chart-low: 142 76% 50%;
+  --chart-medium: 38 92% 50%;
+  --chart-high: 25 95% 53%;
+  --chart-critical: 348 92% 59%;
+}

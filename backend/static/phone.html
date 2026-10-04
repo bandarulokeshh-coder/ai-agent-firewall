@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0a0e27" />
+<title>AgentShield · Phone</title>
+<style>
+  :root {
+    --bg: #0a0e27;
+    --panel: #101637;
+    --panel2: #151c44;
+    --green: #22e584;
+    --green-dim: #16b46a;
+    --green-glow: rgba(34,229,132,.25);
+    --amber: #f5c14a;
+    --amber-glow: rgba(245,193,74,.22);
+    --red: #ff5d5d;
+    --red-glow: rgba(255,93,93,.22);
+    --ink: #e8ecf7;
+    --muted: #8b93b8;
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+  }
+  /* scanline ambience */
+  .grid {
+    position: fixed; inset: 0; pointer-events: none; opacity: .12; z-index: 0;
+    background-image:
+      linear-gradient(rgba(34,229,132,.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34,229,132,.5) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 500px; margin: 0 auto; padding: 14px 14px 40px; }
+
+  /* header */
+  .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .brand { font-weight: 700; font-size: 15px; letter-spacing: .5px; display: flex; align-items: center; gap: 8px; }
+  .brand .shield { color: var(--green); font-size: 18px; }
+  .brand small { color: var(--muted); font-weight: 500; }
+  .pill { font-size: 11px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--green-dim); color: var(--green); font-family: var(--mono); letter-spacing: .5px; }
+  .pill.live { animation: breathe 2.2s ease-in-out infinite; }
+  @keyframes breathe { 0%,100% { box-shadow: 0 0 0 0 var(--green-glow);} 50% { box-shadow: 0 0 0 6px transparent;} }
+
+  .tagline { font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
+  .tagline b { color: var(--ink); }
+
+  /* voice bar */
+  .voice {
+    position: relative; margin-bottom: 16px; padding: 14px 16px; border-radius: 16px;
+    background: var(--panel); border: 1px solid #22305f;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .voice .mic {
+    width: 44px; height: 44px; border-radius: 50%; flex: 0 0 auto;
+    display: grid; place-items: center; font-size: 20px;
+    background: var(--panel2); border: 1px solid #2a3a6e; color: var(--muted);
+    transition: all .25s;
+  }
+  .voice.listening .mic { color: var(--bg); background: var(--green); border-color: var(--green); box-shadow: 0 0 0 0 var(--green-glow); animation: breathe 1.4s infinite; }
+  .voice.interim { font-size: 12px; font-family: var(--mono); color: var(--muted); min-height: 14px; }
+  .voice .hint { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+  .voice .hint b { color: var(--green); }
+
+  /* status of last voice action */
+  .toast { font-family: var(--mono); font-size: 12px; margin-bottom: 14px; min-height: 18px; color: var(--muted); }
+  .toast.ok { color: var(--green); }
+  .toast.bad { color: var(--red); }
+
+  /* pending cards */
+  .sec { font-size: 11px; font-family: var(--mono); letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin: 16px 0 10px; display: flex; align-items: center; gap: 8px; }
+  .sec .count { color: var(--amber); }
+
+  .queue { display: flex; flex-direction: column; gap: 12px; }
+  .card {
+    background: var(--panel); border: 1px solid #22305f; border-radius: 16px; padding: 14px;
+    animation: rise .35s ease;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
+
+  .card .hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 8px; }
+  .card .tool { font-family: var(--mono); font-size: 14px; font-weight: 600; word-break: break-all; }
+  .score { font-family: var(--mono); font-size: 15px; font-weight: 700; padding: 4px 10px; border-radius: 10px; white-space: nowrap; }
+  .score.med { color: var(--amber); background: var(--amber-glow); border: 1px solid rgba(245,193,74,.4); }
+  .score.hi { color: var(--red); background: var(--red-glow); border: 1px solid rgba(255,93,93,.4); }
+
+  .card .args {
+    font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+    background: rgba(0,0,0,.28); border-radius: 10px; padding: 8px 10px;
+    max-height: 64px; overflow: auto; white-space: pre-wrap; word-break: break-word; margin-bottom: 9px;
+  }
+  .card .reason { font-size: 12px; color: var(--ink); line-height: 1.4; margin-bottom: 12px; }
+
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    border-radius: 14px; padding: 4px; background: rgba(0,0,0,.25); }
+  .btns button {
+    appearance: none; border: 0; border-radius: 12px; padding: 15px 0; font-size: 15px; font-weight: 700;
+    font-family: var(--sans); cursor: pointer; transition: transform .08s ease, filter .15s;
+    min-height: 54px;
+  }
+  .btns button:active { transform: scale(.97); }
+  .approve { background: var(--green); color: #03150b; }
+  .approve:active { filter: brightness(.9); }
+  .deny { background: var(--red); color: #1a0404; }
+  .deny:active { filter: brightness(.9); }
+  .btns button:disabled { opacity: .5; }
+
+  /* focus mode banner */
+  .focus { margin-top: 14px; padding: 12px; border-radius: 14px; text-align: center;
+    border: 1px dashed var(--amber); color: var(--amber); font-size: 12.5px; font-family: var(--mono); }
+
+  .empty { text-align: center; color: var(--muted); padding: 30px 0; font-size: 13.5px; line-height: 1.6; }
+  .empty .b { font-size: 40px; display: block; margin-bottom: 8px; opacity: .7; }
+
+  .feed { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+  .feed .row { display: flex; justify-content: space-between; gap: 8px; padding: 7px 0; border-bottom: 1px solid #16204a; }
+  .feed .row .d { color: var(--ink); font-weight: 600; }
+  .feed .row .icon { width: 14px; }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><span class="shield">🛡️</span> AgentShield<small>· phone</small></div>
+    <div class="pill live" id="statusPill">LIVE</div>
+  </div>
+
+  <div class="tagline">Every agent action is intercepted → analyzed → scored.<br/>
+    <b>Don't trust the agent. Approve on the device.</b></div>
+
+  <div class="voice" id="voiceBar">
+    <div class="mic" id="mic">🎙️</div>
+    <div style="flex:1">
+      <div class="hint" id="voiceHint">Voice hands-free: say <b>"approve"</b> or <b>"deny"</b>. Unsure? Tap it instead.</div>
+      <div class="interim" id="interim">&nbsp;</div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <div class="sec">Pending decisions <span class="count" id="pendingCount"></span></div>
+  <div class="queue" id="queue"></div>
+
+  <div class="focus" style="display:none" id="focusBar">
+    🎯 Say <b>approve</b> or <b>deny</b> now — acting on the file at the top of the list.
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var API = window.location.pathname.indexOf('/phone') === 0 ? '../api' : '/api';
+  if (window.location.pathname.endsWith('/phone') || window.location.pathname === '/phone/') {
+    API = '/api';  // served under FastAPI root, relative to server
+  }
+  var q = document.getElementById('queue');
+  var countEl = document.getElementById('pendingCount');
+  var toastEl = document.getElementById('toast');
+  var interimEl = document.getElementById('interim');
+  var voiceBar = document.getElementById('voiceBar');
+  var voiceHint = document.getElementById('voiceHint');
+  var interimTimer = null;
+  var pending = [];
+
+  // Show the working voice URL when this page can't authorize the mic (plain
+  // http on a LAN IP). Serving via https:8443 or localhost unlocks the mic.
+  if (!isSecure() && voiceHint) {
+    var ip = (location.hostname && location.hostname !== 'localhost') ? location.hostname : '<laptop-ip>';
+    voiceHint.innerHTML = 'Voice needs a secure URL: open <b>https://' + ip +
+      ':8443/phone</b> once, tap Allow on the cert + mic, then voice works. ' +
+      'Until then, tap ✓/✕ to decide.';
+  }
+  var lastHeard = '';
+
+  function ready() {
+    return (document.visibilityState === undefined || document.visibilityState === 'visible');
+  }
+
+  function say(txt, kind){
+    toastEl.textContent = txt;
+    toastEl.className = 'toast ' + (kind || '');
+    clearTimeout(say._t);
+    say._t = setTimeout(function(){ toastEl.className='toast'; }, 2600);
+  }
+
+  function render(){
+    var showFocus = (longPressed && pending.length > 0);
+    document.getElementById('focusBar').style.display = showFocus ? 'block' : 'none';
+    countEl.textContent = pending.length ? ('· ' + pending.length) : '';
+    if (!pending.length) {
+      q.innerHTML = '<div class="empty"><span class="b">🛡️</span>All clear.<br/>No actions waiting on you.</div>';
+      var rows = window._feedRows || [];
+      q.insertAdjacentHTML('beforeend', '<div class="sec">Recent decisions</div><div class="feed">' + rows.join('') + '</div>');
+      return;
+    }
+    var html = pending.map(function(p){
+      var cls = p.risk_score >= 60 ? 'hi' : 'med';
+      var args = (p.arguments && typeof p.arguments === 'object') ? JSON.stringify(p.arguments, null, 2) : String(p.arguments||'');
+      return '' +
+        '<div class="card" data-id="' + p.id + '">' +
+          '<div class="hd"><div class="tool">' + esc(p.tool_name) + '</div>' +
+            '<div class="score ' + cls + '">' + p.risk_score + '</div></div>' +
+          '<div class="args">' + esc(args) + '</div>' +
+          '<div class="reason">' + esc(p.reason || '') + '</div>' +
+          '<div class="btns">' +
+            '<button class="approve" data-act="approve" data-id="' + p.id + '">✓ Approve</button>' +
+            '<button class="deny" data-act="deny" data-id="' + p.id + '">✕ Deny</button>' +
+          '</div>' +
+        '</div>';
+    }).join('');
+    q.innerHTML = html;
+  }
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function act(id, action, source){
+    var target = action === 'approve' ? 'approve' : 'reject';
+    fetch(API + '/tool-call/' + encodeURIComponent(id) + '/' + target, {method:'POST'})
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        say((action === 'approve' ? '✅ Approved' : '🚫 Denied') + (source ? ' · via ' + source : ''), action==='approve'?'ok':'bad');
+        pending = pending.filter(function(p){ return p.id !== id; });
+        storeRow(id, action, j);
+        render();
+      })
+      .catch(function(e){ say('Failed to reach backend: ' + e.message, 'bad'); });
+  }
+
+  function storeRow(id, action, j){
+    var score = j && j.risk_score != null ? j.risk_score : '?';
+    var tool = 'action';
+    for (var i=0;i<pending.length;i++){ if(pending[i].id===id){ tool = pending[i].tool_name; } }
+    window._feedRows = window._feedRows || [];
+    window._feedRows.unshift('<div class="row"><span class="icon">'+(action==='approve'?'🟢':'🔴')+'</span>'+
+      '<span class="d">'+esc(tool)+'</span><span>'+score+'</span></div>');
+    window._feedRows = window._feedRows.slice(0, 6);
+  }
+
+  function load(){
+    if (!ready()) return;
+    fetch(API + '/pending')
+      .then(function(r){ return r.json(); })
+      .then(function(list){
+        list = list || [];
+        // keep only still-pending ones
+        pending = list.filter(function(p){ return p.status === 'PENDING'; });
+        render();
+      })
+      .catch(function(e){ toastEl.textContent = '⚠ offline? ' + e.message; });
+  }
+
+  // --- tap handlers (event delegation) ---
+  q.addEventListener('click', function(ev){
+    var btn = ev.target.closest('button');
+    if (!btn) return;
+    act(btn.getAttribute('data-id'), btn.getAttribute('data-act'), 'tap');
+  });
+
+  // --- voice (on-device Web Speech API — no cloud) ---
+  var longPressed = false;
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var recog = SR ? new SR() : null;
+  if (recog) {
+    recog.continuous = true;
+    recog.interimResults = true;
+    recog.lang = 'en-IN';
+    function startVoice(){
+      try { recog.start(); voiceBar.classList.add('listening'); }
+      catch(e){ /* already started */ }
+    }
+    function stopVoice(){
+      voiceBar.classList.remove('listening');
+      setInterim('');
+    }
+    voiceBar.addEventListener('click', function(){
+      if (voiceBar.classList.contains('listening')) { stopVoice(); recog.stop(); return; }
+      if (!voiceUnlocked) {
+        voiceUnlocked = true;
+        say('🎙️ Mic requested — tap Allow if Chrome asks.', 'ok');
+      }
+      startVoice();
+    });
+    recog.onstart = function(){ voiceBar.classList.add('listening'); };
+    recog.onend = function(){ stopVoice(); longPressed = false; };
+    recog.onerror = function(e){
+      stopVoice();
+      if (e && e.error === 'not-allowed') {
+        say('🚫 Mic blocked. Tap ✓/✕ buttons — they always work. '
+            + (isSecure()
+                ? 'Re-tap the mic and choose Allow.'
+                : 'Voice needs a secure connection: open https://<laptop-ip>:8443/phone (mic works) or pair via USB and use http://localhost:8000/phone.'),
+            'bad');
+      } else if (e && e.error !== 'aborted' && e.error !== 'no-speech') {
+        say('Mic: ' + e.error, 'bad');
+      }
+    };
+    var voiceUnlocked = false;
+    recog.onresult = function(ev){
+      var heard = '';
+      for (var i = ev.resultIndex; i < ev.results.length; i++){
+        heard += ev.results[i][0].transcript;
+      }
+      heard = heard.trim().toLowerCase();
+      setInterim(heard);
+      var ctl = /\b(approve|approval|yes|allow|confirm|go ahead|ok)\b/.test(heard);
+      var dny = /\b(deny|denied|no|block|reject|cancel|stop|don'?t)\b/.test(heard);
+      if (!ctl && !dny) return;
+      if (longPressed) { // hands-free focus mode
+        if (ctl && pending.length) act(pending[0].id, 'approve', 'voice');
+        else if (dny && pending.length) act(pending[0].id, 'deny', 'voice');
+      } else {
+        // focus mode engages after one voice activation, then hands-free on the top item
+        longPressed = true;
+        say(ctl ? '👂 Now hands-free — say approve/deny for the top action, or tap any card.'
+                : '👂 Say approve/deny, or tap any card.', 'ok');
+      }
+    };
+  } else {
+    interimEl.textContent = 'Voice not supported in this browser — tap to decide.';
+  }
+
+  // Browsers (esp. Android Chrome) only grant mic on a *secure context*:
+  // https, or localhost/127.0.0.1. Over plain http from a LAN IP, tap-approve
+  // still works but voice can't be authorized — the toast explains the fix.
+  function isSecure(){
+    return window.isSecureContext === true || location.protocol === 'https:'
+        || ['localhost', '127.0.0.1', '::1'].indexOf(location.hostname) !== -1;
+  }
+
+  function setInterim(t){
+    interimEl.textContent = t || ' ';
+    clearTimeout(interimTimer);
+    interimTimer = setTimeout(function(){ interimEl.textContent = ' '; }, 1400);
+  }
+
+  // --- init ---
+  load();
+  setInterval(load, 1500);
+  document.addEventListener('visibilitychange', function(){ if(ready()) load(); });
+})();
+</script>
+</body>
+</html>
