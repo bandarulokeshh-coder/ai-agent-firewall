@@ -2,10 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir uv
-
-COPY pyproject.toml uv.lock* ./
-RUN uv pip install --system .
+COPY pyproject.toml .
+RUN pip install --no-cache-dir setuptools wheel && \
+    pip install --no-cache-dir -e .
 
 COPY . .
 
